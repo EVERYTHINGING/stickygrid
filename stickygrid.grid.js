@@ -187,14 +187,8 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 		items = [];
 		$firstItem = $itemElements.eq(0);
 		numItems = $itemElements.length;
-
-		// var min = Math.min(SG.windowWidth, SG.windowHeight);
-		// var max = Math.max(SG.windowWidth, SG.windowHeight);
-		// var aspect = max/min;
-
 		itemWidth = Math.round(SG.windowWidth*(that.options.itemWidthPercentage/100));
 		itemHeight = Math.round(SG.windowHeight*(that.options.itemHeightPercentage/100));
-
 		numItemsY = Math.ceil(numItems/that.options.numItemsX);
 		pointsArrayXY = [];
 		
