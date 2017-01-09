@@ -170,7 +170,7 @@ SG.Grid = function(gridSelector, itemSelector){
 	var speed = -100;
 	var speedMulti = 1;
 	var maxOffset = 20;
-	var newItemSelectDelay = 200;
+	var newItemSelectDelay = 100;
 
 	this.init = function(){
 		$itemElements = $(itemSelector);
