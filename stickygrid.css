@@ -1,0 +1,46 @@
+.grid {
+	transform-style: preserve-3d;
+	position: relative;
+	margin: 0 auto;
+	margin-bottom: 300px;
+}
+
+.grid-item {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 85vw;
+	height: 85vh;
+	margin: 0;
+	overflow: scroll;
+	cursor: pointer;
+	-webkit-perspective: 500;
+	-moz-perspective: 500;
+	-o-perspective: 500;
+	-ms-perspective: 500;
+	perspective: 500;
+	-webkit-transform-origin: left top;
+	-moz-transform-origin: left top;
+	-o-transform-origin: left top;
+	-ms-transform-origin: left top;
+	transform-origin: left top;
+
+	display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.grid-item:hover {
+	z-index: 9999;	
+}
+
+.grid-item--scroll {
+	display: block;
+}
+
+.grid-item img {
+	display: block;
+	max-width: 100%;
+	max-height: 100%;
+	margin: 0 auto;
+}
