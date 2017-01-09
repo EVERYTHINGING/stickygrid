@@ -12,10 +12,6 @@ SG.$body = $('body');
 SG.windowWidth = SG.$window.width();
 SG.windowHeight = SG.$window.height();
 
-//Compute Matrix
-
-SG.ComputeMatrix = new ComputeMatrix();
-
 //Events
 
 SG.ItemClickEvent = "ItemClickEvent";
@@ -68,23 +64,30 @@ SG.events = new SG.EventTarget();
 
 //VendorTransform
 
-SG.detectPropertyPrefix = function() {
+SG.getVendorTransform = function() {
 
-  var property = "Transform",
-    prefixes = ['Moz', 'ms', 'Webkit', 'O'];
+ var vendorTransform = "transform";
 
-  for (var i=0, j=prefixes.length; i < j; i++) {
-    if (typeof document.body.style[prefixes[i]+property] !== 'undefined') {
+  var property = "transform",
+      prefixes = ['-moz-', '', '-ms-', '-webkit-', '-o-'];
 
-      SG.VendorTransform = prefixes[i] + "Transform";
+  for (var i = 0; i < prefixes.length; i++) {
+    if (typeof document.body.style[prefixes[i] + property] !== 'undefined') {
+
+      vendorTransform = prefixes[i] + property;
+
+      return vendorTransform;
     }
   }
-  
-  if  (SG.VendorTransform == "") SG.VendorTransform = "msTransform";
-  
+
+  return vendorTransform;
 }
 
-SG.detectPropertyPrefix();
+SG.VendorTransform = SG.getVendorTransform();
+
+//Compute Matrix
+
+SG.ComputeMatrix = new ComputeMatrix(SG.VendorTransform);
 
 //IOS?
 

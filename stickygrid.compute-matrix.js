@@ -1,6 +1,8 @@
 /* Stickygrid Copyright 2017 Michael Parisi (EVERYTHINGING) */
 
-var ComputeMatrix = function(){
+var ComputeMatrix = function(tv){
+
+  var transformVendor = tv;
 
   function adj(m) { // Compute the adjugate of m
       return [
@@ -117,10 +119,11 @@ var ComputeMatrix = function(){
         transform2dT[2], transform2dT[5], zPos, transform2dT[8]
     ];
     transform2dT = "matrix3d(" + transform2dT.join(", ") + ")";
-    elt.style["-webkit-transform"] = transform2dT;
-    elt.style["-moz-transform"] = transform2dT;
-    elt.style["-o-transform"] = transform2dT;
-    elt.style.transform = transform2dT;
+    //elt.style["-webkit-transform"] = transform2dT;
+    //elt.style["-moz-transform"] = transform2dT;
+    //elt.style["-o-transform"] = transform2dT;
+    //elt.style.transform = transform2dT;
+    elt.style[transformVendor] = transform2dT;
   }
 
 }

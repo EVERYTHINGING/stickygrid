@@ -1,5 +1,10 @@
 /* Stickygrid Copyright 2017 Michael Parisi (EVERYTHINGING) */
 
+/*
+	TODO
+	-performance enhancments (only update points and items if they are within a certain distance of being in the viewport)
+*/
+
 SG.GridItem = function(el, tl, tr, br, bl){
 	var that = this;
 	var $el = el;
@@ -117,12 +122,7 @@ SG.GridItem = function(el, tl, tr, br, bl){
 	};
 
 	this.resetEl = function(){
-		if (SG.isIOS){
-			$el.css("webkitTransform", "none");
-		}else{
-			$el.css(SG.VendorTransform, "none");
-		}
-
+		$el.css(SG.VendorTransform, "none");
 		this.removeListeners();
 	};
 
