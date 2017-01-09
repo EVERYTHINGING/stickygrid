@@ -20,6 +20,9 @@ SG.GridItem = function(el, tl, tr, br, bl, smallWidth, smallHeight){
 
 	var selected = false;
 
+	var tweenDelayMax = 200;
+	var tweenSpeed = 500;
+
 	this.init = function(){
 		$el.css({ "background-color": "rgb("+Math.floor(Math.random()*255)+","+Math.floor(Math.random()*255)+","+Math.floor(Math.random()*255)+")" });
 		this.addListeners();
@@ -48,7 +51,6 @@ SG.GridItem = function(el, tl, tr, br, bl, smallWidth, smallHeight){
 	this.select = function(){
 		selected = true; 
 		
-
 		var percentageX = width/SG.windowWidth;
 		var percentageY = height/SG.windowHeight;
 		var offsetX = (SG.windowWidth-(SG.windowWidth*percentageX))/2;
@@ -68,28 +70,31 @@ SG.GridItem = function(el, tl, tr, br, bl, smallWidth, smallHeight){
 		var blX = 0 - wrL + offsetX;
 		var blY = wH - wrT - offsetY;
 
-		var delayMax = 200;
-		var speed = 500;
+		var rand1 = Math.abs((Math.random()*tweenDelayMax)-(tweenDelayMax/2));
+		var rand2 = Math.abs((Math.random()*tweenDelayMax)-(tweenDelayMax/2));
+		var rand3 = Math.abs((Math.random()*tweenDelayMax)-(tweenDelayMax/2));
+		var rand4 = Math.abs((Math.random()*tweenDelayMax)-(tweenDelayMax/2));
+
+		var maxDelay = Math.max(rand1, rand2, rand3, rand4);
 
 		var tweenTL = new TWEEN.Tween(that.tl)
-							   .to({ x: tlX, y: tlY }, speed)
-							   .delay(Math.abs((Math.random()*delayMax)-(delayMax/2)))
+							   .to({ x: tlX, y: tlY }, tweenSpeed)
+							   .delay(rand1)
 							   .easing(TWEEN.Easing.Elastic.Out)
 							   .start();
-		
 		var tweenTR = new TWEEN.Tween(that.tr)
-							   .to({ x: trX, y: trY }, speed)
-							   .delay(Math.abs((Math.random()*delayMax)-(delayMax/2)))
+							   .to({ x: trX, y: trY }, tweenSpeed)
+							   .delay(rand2)
 							   .easing(TWEEN.Easing.Elastic.Out)
 							   .start();
 		var tweenBR = new TWEEN.Tween(that.br)
-							   .to({ x: brX, y: brY }, speed)
-							   .delay(Math.abs((Math.random()*delayMax)-(delayMax/2)))
+							   .to({ x: brX, y: brY }, tweenSpeed)
+							   .delay(rand3)
 							   .easing(TWEEN.Easing.Elastic.Out)
 							   .start();
 		var tweenBL = new TWEEN.Tween(that.bl)
-							   .to({ x: blX, y: blY }, speed)
-							   .delay(Math.abs((Math.random()*delayMax)-(delayMax/2)))
+							   .to({ x: blX, y: blY }, tweenSpeed)
+							   .delay(rand4)
 							   .easing(TWEEN.Easing.Elastic.Out)
 							   .start();
 
@@ -99,7 +104,7 @@ SG.GridItem = function(el, tl, tr, br, bl, smallWidth, smallHeight){
 			tweenBR.stop();
 			tweenBL.stop();
 			if(selected){ SG.events.dispatch(SG.ItemOpenedEvent, { item: that }); }
-		}, speed+delayMax+100);
+		}, tweenSpeed+maxDelay+100);
 	};
 
 	this.unselect = function(){
@@ -145,7 +150,7 @@ SG.GridItem = function(el, tl, tr, br, bl, smallWidth, smallHeight){
 	}
 }
 
-SG.Grid = function(gridSelector, itemSelector){
+SG.Grid = function(gridSelector, itemSelector, opts){
 	var that = this;
 
 	var $gridElement = $(gridSelector);
@@ -166,11 +171,15 @@ SG.Grid = function(gridSelector, itemSelector){
 	var mouseX = 100000, mouseY = 100000;
 	var run = true;
 
-	var maxProx = 300;
-	var speed = -100;
-	var speedMulti = 1;
-	var maxOffset = 20;
-	var newItemSelectDelay = 100;
+	var defaults = {
+		maxProx: 300,
+		speed: -100,
+		speedMulti: 1,
+		maxOffset: 20,
+		newItemSelectDelay: 100,
+	};
+
+	var options = $.extend({}, defaults, opts);
 
 	this.init = function(){
 		$itemElements = $(itemSelector);
@@ -195,7 +204,7 @@ SG.Grid = function(gridSelector, itemSelector){
 			
 			for(var x = 0; x < numItemsX+1; x++)
 			{
-				var offset = new SG.Point((Math.random()*(maxOffset*2))-maxOffset, (Math.random()*(maxOffset*2))-maxOffset);
+				var offset = new SG.Point((Math.random()*(options.maxOffset*2))-options.maxOffset, (Math.random()*(options.maxOffset*2))-options.maxOffset);
 
 				p = new SG.Point(x*itemWidth+offset.x, y*itemHeight+offset.y);
 				pointsArrayXY[y][x] = p;
@@ -266,7 +275,7 @@ SG.Grid = function(gridSelector, itemSelector){
 				selectedItem = e.data.item;
 				selectedItem.select();
 				SG.$body.css({ overflow: "hidden" });
-			}, newItemSelectDelay);
+			}, options.newItemSelectDelay);
 		}else{
 			selectedItem = e.data.item;	
 			selectedItem.select();
@@ -302,8 +311,8 @@ SG.Grid = function(gridSelector, itemSelector){
 					distanceY = p.y - mouseY;
 					prox = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
-					p.x = (p.x - (distanceX/prox)*(maxProx/prox)*speed*speedMulti) - ((p.x - p.origX)/2);
-					p.y = (p.y - (distanceY/prox)*(maxProx/prox)*speed*speedMulti) - ((p.y - p.origY)/2);
+					p.x = (p.x - (distanceX/prox)*(options.maxProx/prox)*options.speed*options.speedMulti) - ((p.x - p.origX)/2);
+					p.y = (p.y - (distanceY/prox)*(options.maxProx/prox)*options.speed*options.speedMulti) - ((p.y - p.origY)/2);
 
 				}else if(p != selectedItem.tl && p != selectedItem.tr && p != selectedItem.br && p != selectedItem.bl){
 					centerX = (selectedItem.tlOrig.x + (selectedItem.trOrig.x-selectedItem.tlOrig.x));
