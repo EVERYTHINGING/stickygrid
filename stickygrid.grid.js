@@ -1,6 +1,6 @@
 /* Stickygrid Copyright 2017 Michael Parisi (EVERYTHINGING) */
 
-SG.GridItem = function(el, tl, tr, br, bl, smallWidth, smallHeight){
+SG.GridItem = function(el, tl, tr, br, bl){
 	var that = this;
 	var $el = el;
 	this.tl = tl;
@@ -13,10 +13,6 @@ SG.GridItem = function(el, tl, tr, br, bl, smallWidth, smallHeight){
 	this.blOrig = bl.copy();
 	var width = $el.width();
 	var height = $el.height();
-	var elPosOrig = $el.position();
-	if(elPosOrig.left != 0){ elPosOrig.left -= width+smallWidth; }
-	if(elPosOrig.top != 0){ elPosOrig.top -= height+smallHeight; }
-	$el.css({ left: elPosOrig.left, top: elPosOrig.top });
 
 	var selected = false;
 
@@ -50,7 +46,8 @@ SG.GridItem = function(el, tl, tr, br, bl, smallWidth, smallHeight){
 
 	this.select = function(){
 		selected = true; 
-		
+		$el.addClass('selected');
+
 		var percentageX = width/SG.windowWidth;
 		var percentageY = height/SG.windowHeight;
 		var offsetX = (SG.windowWidth-(SG.windowWidth*percentageX))/2;
@@ -109,6 +106,7 @@ SG.GridItem = function(el, tl, tr, br, bl, smallWidth, smallHeight){
 
 	this.unselect = function(){
 		selected = false;
+		$el.removeClass('selected');
 		SG.events.dispatch(SG.ItemUnClickEvent, { item: that });
 	};
 
@@ -132,15 +130,15 @@ SG.GridItem = function(el, tl, tr, br, bl, smallWidth, smallHeight){
 		if(!this.tlOrig.equals(that.tl) || !this.trOrig.equals(that.tr) || !this.brOrig.equals(that.br) || !this.blOrig.equals(that.bl)){
 
 			SG.ComputeMatrix.transform2d($el[0], 
-						that.tl.x - elPosOrig.left,
-						that.tl.y - elPosOrig.top,
-						that.tr.x - elPosOrig.left,
-						that.tr.y - elPosOrig.top,
-						that.bl.x - elPosOrig.left,
-						that.bl.y - elPosOrig.top,
-						that.br.x - elPosOrig.left,
-						that.br.y - elPosOrig.top,
-						Number(selected));
+										 that.tl.x,
+										 that.tl.y,
+										 that.tr.x,
+										 that.tr.y,
+										 that.bl.x,
+										 that.bl.y,
+										 that.br.x,
+										 that.br.y,
+										 Number(selected));
 
 		}
 
@@ -162,7 +160,6 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 	var numItems;
 	var itemWidth;
 	var itemHeight;
-	var numItemsX;
 	var numItemsY;
 	var pointsArrayXY;
 	var selectedItem = null;
@@ -172,6 +169,7 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 	var run = true;
 
 	var defaults = {
+		numItemsX: 3,
 		maxProx: 300,
 		speed: -100,
 		speedMulti: 1,
@@ -179,7 +177,7 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 		newItemSelectDelay: 100,
 	};
 
-	var options = $.extend({}, defaults, opts);
+	this.options = $.extend({}, defaults, opts);
 
 	this.init = function(){
 		$itemElements = $(itemSelector);
@@ -189,11 +187,10 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 		numItems = $itemElements.length;
 		itemWidth = Math.round(SG.windowWidth/4.5);
 		itemHeight = Math.round(SG.windowHeight/3);
-		numItemsX = 3;
-		numItemsY = Math.ceil(numItems/numItemsX, 10);
+		numItemsY = Math.ceil(numItems/that.options.numItemsX);
 		pointsArrayXY = [];
 		
-		$gridElement.width(numItemsX*itemWidth);
+		$gridElement.width(that.options.numItemsX*itemWidth);
 		$gridElement.height(numItemsY*itemHeight);
 
 		var p, i = 0;
@@ -202,9 +199,9 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 		{				
 			pointsArrayXY[y] = [];
 			
-			for(var x = 0; x < numItemsX+1; x++)
+			for(var x = 0; x < that.options.numItemsX+1; x++)
 			{
-				var offset = new SG.Point((Math.random()*(options.maxOffset*2))-options.maxOffset, (Math.random()*(options.maxOffset*2))-options.maxOffset);
+				var offset = new SG.Point((Math.random()*(that.options.maxOffset*2))-that.options.maxOffset, (Math.random()*(that.options.maxOffset*2))-that.options.maxOffset);
 
 				p = new SG.Point(x*itemWidth+offset.x, y*itemHeight+offset.y);
 				pointsArrayXY[y][x] = p;
@@ -213,12 +210,10 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 				if(x > 0 && y > 0 && i < $itemElements.length)
 				{
 					var gridItem = new SG.GridItem($itemElements.eq(i),
-												pointsArrayXY[y-1][x-1],
-												pointsArrayXY[y-1][x],
-												pointsArrayXY[y][x],
-												pointsArrayXY[y][x-1],
-												itemWidth,
-												itemHeight);
+												   pointsArrayXY[y-1][x-1],
+												   pointsArrayXY[y-1][x],
+												   pointsArrayXY[y][x],
+												   pointsArrayXY[y][x-1]);
 					gridItem.init();
 					items.push(gridItem);
 					i++;
@@ -275,7 +270,7 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 				selectedItem = e.data.item;
 				selectedItem.select();
 				SG.$body.css({ overflow: "hidden" });
-			}, options.newItemSelectDelay);
+			}, that.options.newItemSelectDelay);
 		}else{
 			selectedItem = e.data.item;	
 			selectedItem.select();
@@ -311,8 +306,8 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 					distanceY = p.y - mouseY;
 					prox = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
-					p.x = (p.x - (distanceX/prox)*(options.maxProx/prox)*options.speed*options.speedMulti) - ((p.x - p.origX)/2);
-					p.y = (p.y - (distanceY/prox)*(options.maxProx/prox)*options.speed*options.speedMulti) - ((p.y - p.origY)/2);
+					p.x = (p.x - (distanceX/prox)*(that.options.maxProx/prox)*that.options.speed*that.options.speedMulti) - ((p.x - p.origX)/2);
+					p.y = (p.y - (distanceY/prox)*(that.options.maxProx/prox)*that.options.speed*that.options.speedMulti) - ((p.y - p.origY)/2);
 
 				}else if(p != selectedItem.tl && p != selectedItem.tr && p != selectedItem.br && p != selectedItem.bl){
 					centerX = (selectedItem.tlOrig.x + (selectedItem.trOrig.x-selectedItem.tlOrig.x));

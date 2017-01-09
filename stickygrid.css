@@ -12,7 +12,7 @@
 	width: 90vw;
 	height: 90vh;
 	margin: 0;
-	overflow: scroll;
+	overflow: hidden;
 	cursor: pointer;
 	-webkit-perspective: 500;
 	-moz-perspective: 500;
@@ -28,6 +28,10 @@
 	display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.grid-item.selected {
+	overflow: auto;
 }
 
 .grid-item:hover {
