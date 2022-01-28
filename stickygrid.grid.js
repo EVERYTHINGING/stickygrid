@@ -5,7 +5,7 @@
 	-performance enhancments (only update points and items if they are within a certain distance of being in the viewport)
 */
 
-SG.GridItem = function(el, tl, tr, br, bl){
+SG.GridItem = function(grid, el, tl, tr, br, bl){
 	var that = this;
 	var $el = el;
 	this.tl = tl;
@@ -52,25 +52,47 @@ SG.GridItem = function(el, tl, tr, br, bl){
 	this.select = function(){
 		selected = true; 
 		$el.addClass('selected');
+		viewportInfo = grid.getViewportInfo();;
 
-		var percentageX = width/SG.windowWidth;
-		var percentageY = height/SG.windowHeight;
-		var offsetX = (SG.windowWidth-(SG.windowWidth*percentageX))/2;
-		var offsetY = (SG.windowHeight-(SG.windowHeight*percentageY))/2;
+		var percentageX = width/viewportInfo.width;
+		var percentageY = height/viewportInfo.height;
+		var offsetX = 100;
+		var offsetY = 100;
 
-		var wrL = $el.parent().offset().left;
-		var wrT = $el.parent().position().top;
-		var wW = SG.windowWidth - wrL;
-		var wH = (SG.isIOS)? SG.windowHeight + parseInt(window.pageYOffset, 10) : SG.windowHeight + SG.$document.scrollTop();
+		// var wrL = viewportInfo.$el.offset().left;
+		// var wrT = viewportInfo.$el.position().top;
+		// var wW = viewportInfo.width - wrL;
+		// var wH = (SG.isIOS)? viewportInfo.height + parseInt(window.pageYOffset, 10) : viewportInfo.height + viewportInfo.$el.scrollTop();
 
-		var tlX = 0 - wrL + offsetX;
-		var tlY = SG.$document.scrollTop() - wrT + offsetY;
-		var trX = wW - offsetX;
-		var trY = SG.$document.scrollTop() - wrT + offsetY;
-		var brX = wW - offsetX;
-		var brY = wH - wrT - offsetY;
-		var blX = 0 - wrL + offsetX;
-		var blY = wH - wrT - offsetY;
+		// var tlX = 0 - wrL + offsetX;
+		// var tlY = viewportInfo.$el.scrollTop() - wrT + offsetY;
+		// var trX = wW - offsetX;
+		// var trY = viewportInfo.$el.scrollTop() - wrT + offsetY;
+		// var brX = wW - offsetX;
+		// var brY = wH - wrT - offsetY;
+		// var blX = 0 - wrL + offsetX;
+		// var blY = wH - wrT - offsetY;
+
+		var tl = { 
+			x: viewportInfo.$el.position().left + offsetX,
+			y: viewportInfo.$el.scrollTop() + (viewportInfo.$el.position().top + offsetY)
+		};
+
+		var tr = { 
+			x: (viewportInfo.$el.position().left + viewportInfo.width) - offsetX,
+			y: viewportInfo.$el.scrollTop() +  (viewportInfo.$el.position().top + offsetY)
+		};
+
+		var bl = { 
+			x: viewportInfo.$el.position().left + offsetX,
+			y: viewportInfo.$el.scrollTop() + ((viewportInfo.$el.position().top + viewportInfo.height) - offsetY),
+		};
+
+		var br = { 
+			x: (viewportInfo.$el.position().left + viewportInfo.width) - offsetX,
+			y: viewportInfo.$el.scrollTop() + ((viewportInfo.$el.position().top + viewportInfo.height) - offsetY),
+		};
+
 
 		var rand1 = Math.abs((Math.random()*tweenDelayMax)-(tweenDelayMax/2));
 		var rand2 = Math.abs((Math.random()*tweenDelayMax)-(tweenDelayMax/2));
@@ -80,22 +102,22 @@ SG.GridItem = function(el, tl, tr, br, bl){
 		var maxDelay = Math.max(rand1, rand2, rand3, rand4);
 
 		var tweenTL = new TWEEN.Tween(that.tl)
-							   .to({ x: tlX, y: tlY }, tweenSpeed)
+							   .to({ x: tl.x, y: tl.y }, tweenSpeed)
 							   .delay(rand1)
 							   .easing(TWEEN.Easing.Elastic.Out)
 							   .start();
 		var tweenTR = new TWEEN.Tween(that.tr)
-							   .to({ x: trX, y: trY }, tweenSpeed)
+							   .to({ x: tr.x, y: tr.y }, tweenSpeed)
 							   .delay(rand2)
 							   .easing(TWEEN.Easing.Elastic.Out)
 							   .start();
-		var tweenBR = new TWEEN.Tween(that.br)
-							   .to({ x: brX, y: brY }, tweenSpeed)
+		var tweenBR = new TWEEN.Tween(that.bl)
+							   .to({ x: bl.x, y: bl.y }, tweenSpeed)
 							   .delay(rand3)
 							   .easing(TWEEN.Easing.Elastic.Out)
 							   .start();
-		var tweenBL = new TWEEN.Tween(that.bl)
-							   .to({ x: blX, y: blY }, tweenSpeed)
+		var tweenBL = new TWEEN.Tween(that.br)
+							   .to({ x: br.x, y: br.y }, tweenSpeed)
 							   .delay(rand4)
 							   .easing(TWEEN.Easing.Elastic.Out)
 							   .start();
@@ -148,11 +170,12 @@ SG.GridItem = function(el, tl, tr, br, bl){
 	}
 }
 
-SG.Grid = function(gridSelector, itemSelector, opts){
+SG.Grid = function($gridElement, itemSelector, opts){
 	var that = this;
 
-	var $gridElement = $(gridSelector);
-
+	var $viewportElement = $gridElement.parent('.grid-wrapper').parent('.viewport');
+	var viewportWidth = $viewportElement.width();
+	var viewportHeight = $viewportElement.height();
 	var $itemElements;
 	var points;
 	var items;
@@ -166,7 +189,6 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 
 	var lastScrolledLeft = 0, lastScrolledTop = 0;
 	var mouseX = 100000, mouseY = 100000;
-	var run = true;
 
 	var defaults = {
 		numItemsX: 3,
@@ -177,18 +199,21 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 		speedMulti: 1,
 		maxOffset: 20,
 		newItemSelectDelay: 100,
+		run: true
 	};
 
 	this.options = $.extend({}, defaults, opts);
 
+	var run = this.options.run;
+
 	this.init = function(){
-		$itemElements = $(itemSelector);
+		$itemElements = $gridElement.find("> "+itemSelector);
 		points = [];
 		items = [];
 		$firstItem = $itemElements.eq(0);
 		numItems = $itemElements.length;
-		itemWidth = Math.round(SG.windowWidth*(that.options.itemWidthPercentage/100));
-		itemHeight = Math.round(SG.windowHeight*(that.options.itemHeightPercentage/100));
+		itemWidth = Math.round(viewportWidth*(that.options.itemWidthPercentage/100));
+		itemHeight = Math.round(viewportHeight*(that.options.itemHeightPercentage/100));
 		numItemsY = Math.ceil(numItems/that.options.numItemsX);
 		pointsArrayXY = [];
 		
@@ -211,7 +236,8 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 				
 				if(x > 0 && y > 0 && i < $itemElements.length)
 				{
-					var gridItem = new SG.GridItem($itemElements.eq(i),
+					var gridItem = new SG.GridItem(that, 
+												   $itemElements.eq(i),
 												   pointsArrayXY[y-1][x-1],
 												   pointsArrayXY[y-1][x],
 												   pointsArrayXY[y][x],
@@ -231,15 +257,15 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 			document.addEventListener("touchmove", this.onTouchMove, false);
 		}
 
-		SG.$window.scroll(function(event) {
-			if(lastScrolledLeft != SG.$document.scrollLeft()){
+		$viewportElement.scroll(function(event) {
+			if(lastScrolledLeft != $viewportElement.scrollLeft()){
 	            mouseX -= lastScrolledLeft;
-	            lastScrolledLeft = SG.$document.scrollLeft();
+	            lastScrolledLeft = $viewportElement.scrollLeft();
 	            mouseX += lastScrolledLeft;
 	        }
-	        if(lastScrolledTop != SG.$document.scrollTop()){
+	        if(lastScrolledTop != $viewportElement.scrollTop()){
 	            mouseY -= lastScrolledTop;
-	            lastScrolledTop = SG.$document.scrollTop();
+	            lastScrolledTop = $viewportElement.scrollTop();
 	            mouseY += lastScrolledTop;
 	        }
 	    });
@@ -278,18 +304,22 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 			selectedItem.select();
 			SG.$body.css({ overflow: "hidden" });
 		}
+
+		$viewportElement.css("overflow-y", "hidden");
+		//setTimeout(function(){ run = false; }, 2000);
 	};
 
 	this.onItemUnClick = function(e){
-		SG.$document.scrollTop(selectedItem.tlOrig.y);
+		$viewportElement.scrollTop(selectedItem.tlOrig.y);
 		selectedItem = null;
 		SG.$body.css({ overflow: "inherit" });
 		$gridElement.css("transform-style", "preserve-3d");
+		$viewportElement.css("overflow-y", "scroll");
 		run = true;
 	};
 
 	this.onItemOpened = function(e){
-		run = false;
+		//run = false;
 		$gridElement.css("transform-style", "flat");
 	};
 
@@ -336,8 +366,8 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 	this.resize = function(){
 		run = false;
 
-		SG.windowWidth = SG.$window.width();
-		SG.windowHeight = SG.$window.height();
+		viewportWidth = $viewportElement.width();
+		viewportHeight = $viewportElement.height();
 
 		if(selectedItem){ selectedItem.unselect(); }
 
@@ -348,6 +378,10 @@ SG.Grid = function(gridSelector, itemSelector, opts){
 		this.init();
 
 		run = true;
+	};
+
+	this.getViewportInfo = function(){
+		return { $el: $viewportElement, width: viewportWidth, height: viewportHeight }
 	};
 
 	this.init();
