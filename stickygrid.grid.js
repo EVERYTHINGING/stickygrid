@@ -54,43 +54,30 @@ SG.GridItem = function(grid, el, tl, tr, br, bl){
 		$el.addClass('selected');
 		viewportInfo = grid.getViewportInfo();;
 
-		var percentageX = width/viewportInfo.width;
-		var percentageY = height/viewportInfo.height;
-		var offsetX = 100;
-		var offsetY = 100;
+		var offsetX = 50;
+		var offsetY = 50;
 
-		// var wrL = viewportInfo.$el.offset().left;
-		// var wrT = viewportInfo.$el.position().top;
-		// var wW = viewportInfo.width - wrL;
-		// var wH = (SG.isIOS)? viewportInfo.height + parseInt(window.pageYOffset, 10) : viewportInfo.height + viewportInfo.$el.scrollTop();
-
-		// var tlX = 0 - wrL + offsetX;
-		// var tlY = viewportInfo.$el.scrollTop() - wrT + offsetY;
-		// var trX = wW - offsetX;
-		// var trY = viewportInfo.$el.scrollTop() - wrT + offsetY;
-		// var brX = wW - offsetX;
-		// var brY = wH - wrT - offsetY;
-		// var blX = 0 - wrL + offsetX;
-		// var blY = wH - wrT - offsetY;
+		var gridOffsetX = ($el.parent('.grid').offset().left)*-1;
+		var gridOffsetY = ($el.parent('.grid').offset().top)*-1;
 
 		var tl = { 
-			x: viewportInfo.$el.position().left + offsetX,
-			y: viewportInfo.$el.scrollTop() + (viewportInfo.$el.position().top + offsetY)
+			x: gridOffsetX + offsetX,
+			y: gridOffsetY + offsetY
 		};
 
 		var tr = { 
-			x: (viewportInfo.$el.position().left + viewportInfo.width) - offsetX,
-			y: viewportInfo.$el.scrollTop() +  (viewportInfo.$el.position().top + offsetY)
+			x: (gridOffsetX + viewportInfo.width) - offsetX,
+			y: gridOffsetY + offsetY
 		};
 
 		var bl = { 
-			x: viewportInfo.$el.position().left + offsetX,
-			y: viewportInfo.$el.scrollTop() + ((viewportInfo.$el.position().top + viewportInfo.height) - offsetY),
+			x: gridOffsetX + offsetX,
+			y: gridOffsetY + (viewportInfo.height - offsetY)
 		};
 
 		var br = { 
-			x: (viewportInfo.$el.position().left + viewportInfo.width) - offsetX,
-			y: viewportInfo.$el.scrollTop() + ((viewportInfo.$el.position().top + viewportInfo.height) - offsetY),
+			x: (gridOffsetX + viewportInfo.width) - offsetX,
+			y: gridOffsetY + (viewportInfo.height - offsetY)
 		};
 
 
