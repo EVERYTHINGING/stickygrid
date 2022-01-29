@@ -8,6 +8,7 @@
 SG.GridItem = function(grid, el, tl, tr, br, bl){
 	var that = this;
 	var $el = el;
+	this.$el = $el;
 	this.tl = tl;
 	this.tr = tr;
 	this.br = br;
@@ -51,7 +52,6 @@ SG.GridItem = function(grid, el, tl, tr, br, bl){
 
 	this.select = function(){
 		selected = true; 
-		$el.addClass('selected');
 		viewportInfo = grid.getViewportInfo();;
 
 		var offsetX = 50;
@@ -114,6 +114,7 @@ SG.GridItem = function(grid, el, tl, tr, br, bl){
 			tweenTR.stop();
 			tweenBR.stop();
 			tweenBL.stop();
+			$el.addClass('selected');
 			if(selected){ SG.events.dispatch(SG.ItemOpenedEvent, { item: that }); }
 		}, tweenSpeed+maxDelay+100);
 	};
@@ -160,7 +161,7 @@ SG.GridItem = function(grid, el, tl, tr, br, bl){
 SG.Grid = function($gridElement, itemSelector, opts){
 	var that = this;
 
-	var $viewportElement = $gridElement.parent('.grid-wrapper').parent('.viewport');
+	var $viewportElement = $gridElement.closest('.viewport');
 	var viewportWidth = $viewportElement.width();
 	var viewportHeight = $viewportElement.height();
 	var $itemElements;
@@ -186,7 +187,8 @@ SG.Grid = function($gridElement, itemSelector, opts){
 		speedMulti: 1,
 		maxOffset: 20,
 		newItemSelectDelay: 100,
-		run: true
+		run: true,
+		isMain: true
 	};
 
 	this.options = $.extend({}, defaults, opts);
@@ -194,6 +196,7 @@ SG.Grid = function($gridElement, itemSelector, opts){
 	var run = this.options.run;
 
 	this.init = function(){
+		console.log('init');
 		$itemElements = $gridElement.find("> "+itemSelector);
 		points = [];
 		items = [];
@@ -279,29 +282,31 @@ SG.Grid = function($gridElement, itemSelector, opts){
 	};
 
 	this.onItemClick = function(e){
-		if(selectedItem != null){
-			selectedItem.unselect();
-			setTimeout(function(){
-				selectedItem = e.data.item;
+		if(that.options.isMain || e.data.item.$el.closest('.grid-item').hasClass('selected')){
+			console.log('click');
+			if(selectedItem != null){
+				selectedItem.unselect();
+				setTimeout(function(){
+					selectedItem = e.data.item;
+					selectedItem.select();
+				}, that.options.newItemSelectDelay);
+			}else{
+				selectedItem = e.data.item;	
 				selectedItem.select();
-				SG.$body.css({ overflow: "hidden" });
-			}, that.options.newItemSelectDelay);
-		}else{
-			selectedItem = e.data.item;	
-			selectedItem.select();
-			SG.$body.css({ overflow: "hidden" });
+			}
 		}
-
-		$viewportElement.css("overflow-y", "hidden");
+		
+		console.log(that.options.isMain);
+		if($viewportElement.hasClass("active")){ $viewportElement.css("overflow-y", "hidden"); }
 		//setTimeout(function(){ run = false; }, 2000);
 	};
 
 	this.onItemUnClick = function(e){
 		$viewportElement.scrollTop(selectedItem.tlOrig.y);
 		selectedItem = null;
-		SG.$body.css({ overflow: "inherit" });
 		$gridElement.css("transform-style", "preserve-3d");
 		$viewportElement.css("overflow-y", "scroll");
+
 		run = true;
 	};
 
@@ -313,6 +318,7 @@ SG.Grid = function($gridElement, itemSelector, opts){
 	var p, prox, angle, distanceX, distanceY;
 	var centerX, centerY;
 	var i, j, item;
+	var time = 0;
 
 	this.update = function(){
 		if(run){
@@ -327,6 +333,9 @@ SG.Grid = function($gridElement, itemSelector, opts){
 
 					p.x = (p.x - (distanceX/prox)*(that.options.maxProx/prox)*that.options.speed*that.options.speedMulti) - ((p.x - p.origX)/2);
 					p.y = (p.y - (distanceY/prox)*(that.options.maxProx/prox)*that.options.speed*that.options.speedMulti) - ((p.y - p.origY)/2);
+
+					p.x += Math.cos(i*time+(Math.random()*0.1));
+					p.y += Math.sin(i*time+(Math.random()*0.1));
 
 				}else if(p != selectedItem.tl && p != selectedItem.tr && p != selectedItem.br && p != selectedItem.bl){
 					centerX = (selectedItem.tlOrig.x + (selectedItem.trOrig.x-selectedItem.tlOrig.x));
@@ -347,20 +356,24 @@ SG.Grid = function($gridElement, itemSelector, opts){
 			}			
 		}
 
+		time += 0.01;
 		window.requestAnimationFrame(that.update);
 	};
 
 	this.resize = function(){
-		run = false;
+		console.log('resize');
+		//run = false;
 
 		viewportWidth = $viewportElement.width();
 		viewportHeight = $viewportElement.height();
 
+		/*
 		if(selectedItem){ selectedItem.unselect(); }
 
 		for(var i = 0; i < items.length; i++){
 			items[i].resetEl();
 		}
+		*/
 
 		this.init();
 

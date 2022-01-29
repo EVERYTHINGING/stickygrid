@@ -17,6 +17,7 @@ SG.windowHeight = SG.$window.height();
 SG.ItemClickEvent = "ItemClickEvent";
 SG.ItemUnClickEvent = "ItemUnClickEvent";
 SG.ItemOpenedEvent = "ItemOpenedEvent";
+SG.ResizeEvent = "ResizeEvent";
 
 SG.EventTarget = function () {
   
