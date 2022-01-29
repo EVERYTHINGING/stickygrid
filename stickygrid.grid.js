@@ -356,7 +356,7 @@ SG.Grid = function($gridElement, itemSelector, opts){
 			}			
 		}
 
-		time += 0.01;
+		time += 0.001;
 		window.requestAnimationFrame(that.update);
 	};
 
