@@ -334,8 +334,8 @@ SG.Grid = function($gridElement, itemSelector, opts){
 					p.x = (p.x - (distanceX/prox)*(that.options.maxProx/prox)*that.options.speed*that.options.speedMulti) - ((p.x - p.origX)/2);
 					p.y = (p.y - (distanceY/prox)*(that.options.maxProx/prox)*that.options.speed*that.options.speedMulti) - ((p.y - p.origY)/2);
 
-					p.x += Math.cos(i*time+(Math.random()*0.1));
-					p.y += Math.sin(i*time+(Math.random()*0.1));
+					p.x += Math.cos((i*i)+time+(Math.random()*0.1));
+					p.y += Math.sin((i*i)+time+(Math.random()*0.1));
 
 				}else if(p != selectedItem.tl && p != selectedItem.tr && p != selectedItem.br && p != selectedItem.bl){
 					centerX = (selectedItem.tlOrig.x + (selectedItem.trOrig.x-selectedItem.tlOrig.x));
@@ -356,7 +356,7 @@ SG.Grid = function($gridElement, itemSelector, opts){
 			}			
 		}
 
-		time += 0.001;
+		time += 0.025;
 		window.requestAnimationFrame(that.update);
 	};
 
